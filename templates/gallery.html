@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trip Memories</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div class="banner">
+    <h1>🌍 Trip Memories</h1>
+    <p>Every photo tells a story</p>
+</div>
+
+<div class="upload-section">
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="photo" required>
+        <button type="submit">Upload Photo</button>
+    </form>
+</div>
+
+<div class="gallery">
+    {% for photo in photos %}
+    <div class="photo-card">
+        <img src="{{ photo.url }}" alt="photo">
+        <a href="{{ photo.url }}" download>⬇ Download</a>
+    </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>
