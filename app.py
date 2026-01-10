@@ -57,3 +57,28 @@ def gallery():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
+# ---------------- Render Wake-Up Script ----------------
+import requests
+import os
+from datetime import datetime
+
+def send_telegram(msg):
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+
+    if not token or not chat_id:
+        return
+
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    requests.post(url, data={
+        "chat_id": chat_id,
+        "text": msg
+    }, timeout=5)
+
+send_telegram(f"""
+🚀 Render App Woke Up
+
+⏰ Time: {datetime.utcnow()}
+📦 Service: Trip Photo App
+""")
