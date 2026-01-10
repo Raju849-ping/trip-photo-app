@@ -1,23 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Trip Memories</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
 
+<!-- Banner -->
 <div class="banner">
-    <h1>🌍 Trip Memories</h1>
-    <p>Every photo tells a story</p>
+    <div class="banner-left">
+        <img src="/static/images/banner.jpg" alt="Trip Banner">
+    </div>
+
+    <div class="banner-right">
+        <h1>
+            <span class="globe">🌍</span>
+            Trip Memories
+        </h1>
+        <p>Every photo tells a story</p>
+    </div>
 </div>
 
+<!-- Categories -->
+<div class="categories">
+    <div class="category">🏞️ Nature</div>
+    <div class="category">🏖️ Beach</div>
+    <div class="category">🏔️ Mountains</div>
+    <div class="category">🏙️ City</div>
+</div>
+
+<!-- Upload Section -->
 <div class="upload-section">
+    <!-- IMPORTANT: POST to /gallery -->
     <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="photo" required>
+        <input type="file" name="photo" accept="image/*" required>
         <button type="submit">Upload Photo</button>
     </form>
 </div>
 
+<!-- Gallery -->
 <div class="gallery">
     {% for photo in photos %}
     <div class="photo-card">

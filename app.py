@@ -4,6 +4,7 @@ import os
 
 app = Flask(__name__)
 
+# AWS S3 Client
 s3 = boto3.client(
     "s3",
     aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
@@ -11,14 +12,22 @@ s3 = boto3.client(
     region_name=os.environ.get("AWS_REGION")
 )
 
-BUCKET = os.environ.get("S3_BUCKET_NAME")
+BUCKET = os.environ.get("AWS_BUCKET_NAME")
 
 
-@app.route("/", methods=["GET", "POST"])
-def upload():
+@app.route("/", methods=["GET"])
+def home():
+    # Always redirect root to gallery
+    return redirect(url_for("gallery"))
+
+
+@app.route("/gallery", methods=["GET", "POST"])
+def gallery():
+    # ---------- Handle Upload ----------
     if request.method == "POST":
         file = request.files.get("photo")
-        if file:
+
+        if file and file.filename:
             s3.upload_fileobj(
                 file,
                 BUCKET,
@@ -26,11 +35,8 @@ def upload():
                 ExtraArgs={"ContentType": file.content_type}
             )
             return redirect(url_for("gallery"))
-    return redirect(url_for("gallery"))
 
-
-@app.route("/gallery")
-def gallery():
+    # ---------- Load Gallery ----------
     response = s3.list_objects_v2(Bucket=BUCKET)
 
     photos = []
