@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, redirect, url_for
 import boto3
 import os
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 # ✅ Using IAM Role (no keys needed)
 s3 = boto3.client("s3")
