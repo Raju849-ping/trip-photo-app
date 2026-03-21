@@ -2,12 +2,18 @@ from flask import Flask, request, render_template, redirect, url_for
 import boto3
 import os
 
-app = Flask(__name__)
+app = Flask(_name_)
 
 # ✅ Using IAM Role (no keys needed)
 s3 = boto3.client("s3")
 
 BUCKET = os.environ.get("AWS_BUCKET_NAME")
+
+
+# ✅ Health Check Endpoint (VERY IMPORTANT for ALB)
+@app.route("/health")
+def health():
+    return "OK", 200
 
 
 @app.route("/", methods=["GET"])
@@ -22,33 +28,40 @@ def gallery():
         file = request.files.get("photo")
 
         if file and file.filename:
-            s3.upload_fileobj(
-                file,
-                BUCKET,
-                file.filename,
-                ExtraArgs={
-                    "ContentType": file.content_type,
-                    "ACL": "public-read"   # ✅ allow public access
-                }
-            )
+            try:
+                s3.upload_fileobj(
+                    file,
+                    BUCKET,
+                    file.filename,
+                    ExtraArgs={
+                        "ContentType": file.content_type,
+                        "ACL": "public-read"
+                    }
+                )
+            except Exception as e:
+                return f"Upload Error: {str(e)}", 500
+
             return redirect(url_for("gallery"))
 
     # ---------- Fetch Images ----------
-    response = s3.list_objects_v2(Bucket=BUCKET)
-
     photos = []
-    if "Contents" in response:
-        for obj in response["Contents"]:
-            url = f"https://{BUCKET}.s3.eu-north-1.amazonaws.com/{obj['Key']}"
-            photos.append({
-                "name": obj["Key"],
-                "url": url
-            })
+    try:
+        response = s3.list_objects_v2(Bucket=BUCKET)
+
+        if "Contents" in response:
+            for obj in response["Contents"]:
+                url = f"https://{BUCKET}.s3.eu-north-1.amazonaws.com/{obj['Key']}"
+                photos.append({
+                    "name": obj["Key"],
+                    "url": url
+                })
+    except Exception as e:
+        return f"S3 Error: {str(e)}", 500
 
     return render_template("gallery.html", photos=photos)
 
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     app.run(host="0.0.0.0", port=5000)
 
 
