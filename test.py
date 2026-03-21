@@ -10,7 +10,7 @@ s3 = boto3.client("s3")
 BUCKET = os.environ.get("AWS_BUCKET_NAME")
 
 
-# ✅ Health Check Endpoint (VERY IMPORTANT for ALB)
+# ✅ Health Check (for ALB)
 @app.route("/health")
 def health():
     return "OK", 200
@@ -34,8 +34,7 @@ def gallery():
                     BUCKET,
                     file.filename,
                     ExtraArgs={
-                        "ContentType": file.content_type,
-                        "ACL": "public-read"
+                        "ContentType": file.content_type
                     }
                 )
             except Exception as e:
@@ -50,18 +49,25 @@ def gallery():
 
         if "Contents" in response:
             for obj in response["Contents"]:
-                url = f"https://{BUCKET}.s3.eu-north-1.amazonaws.com/{obj['Key']}"
+                # ✅ Generate secure temporary URL
+                url = s3.generate_presigned_url(
+                    "get_object",
+                    Params={"Bucket": BUCKET, "Key": obj["Key"]},
+                    ExpiresIn=3600
+                )
+
                 photos.append({
                     "name": obj["Key"],
                     "url": url
                 })
+
     except Exception as e:
         return f"S3 Error: {str(e)}", 500
 
     return render_template("gallery.html", photos=photos)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":   # ✅ FIXED HERE
     app.run(host="0.0.0.0", port=5000)
 
 
