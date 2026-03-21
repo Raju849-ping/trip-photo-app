@@ -1,8 +1,12 @@
 from flask import Flask, request, render_template, redirect, url_for
 import boto3
 import os
+from werkzeug.middleware.proxy_fix import ProxyFix   # ✅ NEW
 
 app = Flask(__name__)
+
+# ✅ Fix for ALB / Reverse Proxy
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
 # ✅ Using IAM Role (no keys needed)
 s3 = boto3.client("s3")
@@ -49,7 +53,7 @@ def gallery():
 
         if "Contents" in response:
             for obj in response["Contents"]:
-                # ✅ Generate secure temporary URL
+                # ✅ Secure temporary URL
                 url = s3.generate_presigned_url(
                     "get_object",
                     Params={"Bucket": BUCKET, "Key": obj["Key"]},
@@ -67,7 +71,7 @@ def gallery():
     return render_template("gallery.html", photos=photos)
 
 
-if __name__ == "__main__":   # ✅ FIXED HERE
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
 
 
